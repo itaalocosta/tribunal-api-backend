@@ -1,0 +1,24 @@
+{
+  "8ba4f2600215a41fdc87201231cf1e07f0287c140647394f70b8da7a8a7a160c": {
+    "name": "Teste Cliente",
+    "email": "teste@exemplo.com",
+    "plan": "basic",
+    "created_at": "2025-06-13T15:11:37.412221",
+    "active": true,
+    "limits": {
+      "daily": 50,
+      "monthly": 1000
+    }
+  },
+  "d4958e574a838160060927d0864dd301756a637ca449527080af1a35f4d4606e": {
+    "name": "Cliente Teste Web",
+    "email": "teste@web.com",
+    "plan": "professional",
+    "created_at": "2025-06-13T15:18:25.748023",
+    "active": true,
+    "limits": {
+      "daily": 200,
+      "monthly": 5000
+    }
+  }
+}

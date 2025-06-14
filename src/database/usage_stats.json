@@ -1,0 +1,10 @@
+{
+  "8ba4f2600215a41fdc87201231cf1e07f0287c140647394f70b8da7a8a7a160c": {
+    "2025-06-13": {
+      "total": 1,
+      "endpoints": {
+        "tribunal_protected.validar_processo_protegido": 1
+      }
+    }
+  }
+}

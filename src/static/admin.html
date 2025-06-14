@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Consulta de Tribunais - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .tab.active:before {
+            left: 0;
+        }
+
+        .tab.active {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+        }
+
+        .api-key-list {
+            margin-top: 20px;
+        }
+
+        .api-key-item {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .api-key-item:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .api-key-info h4 {
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .api-key-info p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .plan-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .plan-free { background: #fed7d7; color: #c53030; }
+        .plan-basic { background: #bee3f8; color: #2b6cb0; }
+        .plan-professional { background: #c6f6d5; color: #2f855a; }
+        .plan-enterprise { background: #fbb6ce; color: #b83280; }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .integration-info {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .integration-info h4 {
+            color: #234e52;
+            margin-bottom: 10px;
+        }
+
+        .integration-info code {
+            background: #234e52;
+            color: #81e6d9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-button {
+            background: #38b2ac;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .api-key-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Sistema de Tribunais</h1>
+            <p>Painel Administrativo - Gerenciamento de Chaves de API</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
+            <div class="tab" onclick="showTab('create-key')">🔑 Criar Chave</div>
+            <div class="tab" onclick="showTab('manage-keys')">📋 Gerenciar Chaves</div>
+            <div class="tab" onclick="showTab('integration')">🔗 Integração MCP</div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3 id="total-keys">-</h3>
+                    <p>Total de Chaves</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="active-keys">-</h3>
+                    <p>Chaves Ativas</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="today-requests">-</h3>
+                    <p>Requisições Hoje</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="revenue-estimate">R$ -</h3>
+                    <p>Receita Estimada</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn" onclick="loadDashboard()">
+                    <span class="loading" id="dashboard-loading" style="display: none;"></span>
+                    Atualizar Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Create Key Tab -->
+        <div id="create-key" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">Criar Nova Chave de API</h2>
+            
+            <div id="create-alert"></div>
+            
+            <form id="create-key-form">
+                <div class="form-group">
+                    <label for="key-name">Nome da Chave</label>
+                    <input type="text" id="key-name" placeholder="Ex: Cliente João Silva" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-email">Email do Cliente</label>
+                    <input type="email" id="key-email" placeholder="cliente@exemplo.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-plan">Plano</label>
+                    <select id="key-plan" required>
+                        <option value="free">Gratuito (10 consultas/mês)</option>
+                        <option value="basic">Básico (1000 consultas/mês) - R$ 29,90</option>
+                        <option value="professional">Profissional (5000 consultas/mês) - R$ 99,90</option>
+                        <option value="enterprise">Empresarial (Ilimitado) - R$ 299,90</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-expires">Expiração (dias)</label>
+                    <input type="number" id="key-expires" placeholder="365 (deixe vazio para não expirar)">
+                </div>
+                
+                <button type="submit" class="btn">
+                    <span class="loading" id="create-loading" style="display: none;"></span>
+                    Criar Chave de API
+                </button>
+            </form>
+        </div>
+
+        <!-- Manage Keys Tab -->
+        <div id="manage-keys" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">Gerenciar Chaves de API</h2>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button class="btn" onclick="loadApiKeys()">
+                    <span class="loading" id="keys-loading" style="display: none;"></span>
+                    Atualizar Lista
+                </button>
+            </div>
+            
+            <div id="api-keys-list" class="api-key-list">
+                <!-- Chaves serão carregadas aqui -->
+            </div>
+        </div>
+
+        <!-- Integration Tab -->
+        <div id="integration" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">Integração com Claude Web</h2>
+            
+            <div class="integration-info">
+                <h4>🔗 URL do Servidor MCP</h4>
+                <p>Use esta URL para conectar com Claude Web:</p>
+                <code id="mcp-url">https://seu-servidor-mcp.railway.app/mcp</code>
+                <button class="copy-button" onclick="copyToClipboard('mcp-url')">Copiar</button>
+            </div>
+            
+            <div class="integration-info">
+                <h4>🔑 Como Usar</h4>
+                <ol style="margin-left: 20px; color: #234e52;">
+                    <li>Crie uma chave de API na aba "Criar Chave"</li>
+                    <li>No Claude Web, vá em Configurações → Integrações</li>
+                    <li>Adicione um novo servidor MCP com a URL acima</li>
+                    <li>Configure o header <code>X-API-Key</code> com sua chave</li>
+                    <li>Teste com comandos como "Liste os tribunais disponíveis"</li>
+                </ol>
+            </div>
+            
+            <div class="integration-info">
+                <h4>🛠️ Ferramentas Disponíveis</h4>
+                <ul style="margin-left: 20px; color: #234e52;">
+                    <li><strong>consultar_processo:</strong> Consulta processos judiciais</li>
+                    <li><strong>listar_tribunais:</strong> Lista tribunais disponíveis</li>
+                    <li><strong>validar_processo:</strong> Valida números de processo</li>
+                    <li><strong>consulta_multipla:</strong> Consulta em múltiplos tribunais</li>
+                    <li><strong>status_sistema:</strong> Verifica status do sistema</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração da API
+        const API_BASE = window.location.origin;
+        
+        // Função para mostrar tabs
+        function showTab(tabName) {
+            // Esconder todas as tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar tab selecionada
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Carregar dados específicos da tab
+            if (tabName === 'dashboard') {
+                loadDashboard();
+            } else if (tabName === 'manage-keys') {
+                loadApiKeys();
+            } else if (tabName === 'integration') {
+                updateMcpUrl();
+            }
+        }
+        
+        // Função para mostrar alertas
+        function showAlert(containerId, message, type = 'success') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Função para mostrar loading
+        function showLoading(elementId, show = true) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.style.display = show ? 'inline-block' : 'none';
+            }
+        }
+        
+        // Carregar dashboard
+        async function loadDashboard() {
+            showLoading('dashboard-loading', true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/dashboard`);
+                const data = await response.json();
+                
+                document.getElementById('total-keys').textContent = data.total_keys || 0;
+                document.getElementById('active-keys').textContent = data.active_keys || 0;
+                document.getElementById('today-requests').textContent = data.today_requests || 0;
+                
+                const revenue = (data.revenue_estimate?.basic || 0) + 
+                               (data.revenue_estimate?.professional || 0) + 
+                               (data.revenue_estimate?.enterprise || 0);
+                document.getElementById('revenue-estimate').textContent = `R$ ${revenue.toFixed(2)}`;
+                
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+            } finally {
+                showLoading('dashboard-loading', false);
+            }
+        }
+        
+        // Criar chave de API
+        document.getElementById('create-key-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoading('create-loading', true);
+            
+            const formData = {
+                name: document.getElementById('key-name').value,
+                email: document.getElementById('key-email').value,
+                plan: document.getElementById('key-plan').value,
+                expires_in_days: document.getElementById('key-expires').value || null
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/api-keys`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('create-alert', 
+                        `✅ Chave criada com sucesso!<br><br>
+                         <strong>Chave de API:</strong><br>
+                         <code style="background: #234e52; color: #81e6d9; padding: 5px; border-radius: 4px; word-break: break-all;">${data.api_key}</code><br><br>
+                         <small>⚠️ Guarde esta chave em local seguro. Ela não será mostrada novamente!</small>`, 
+                        'success');
+                    document.getElementById('create-key-form').reset();
+                } else {
+                    showAlert('create-alert', `❌ Erro: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showAlert('create-alert', `❌ Erro de conexão: ${error.message}`, 'error');
+            } finally {
+                showLoading('create-loading', false);
+            }
+        });
+        
+        // Carregar lista de chaves
+        async function loadApiKeys() {
+            showLoading('keys-loading', true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/api-keys`);
+                const data = await response.json();
+                
+                const container = document.getElementById('api-keys-list');
+                
+                if (data.keys && data.keys.length > 0) {
+                    container.innerHTML = data.keys.map(key => `
+                        <div class="api-key-item">
+                            <div class="api-key-info">
+                                <h4>${key.name}</h4>
+                                <p>📧 ${key.email || 'Sem email'}</p>
+                                <p>📅 Criado em: ${new Date(key.created_at).toLocaleDateString('pt-BR')}</p>
+                                <p>⏰ Expira em: ${key.expires_at ? new Date(key.expires_at).toLocaleDateString('pt-BR') : 'Nunca'}</p>
+                                <span class="plan-badge plan-${key.plan}">${key.plan}</span>
+                            </div>
+                            <div>
+                                <button class="btn btn-danger" onclick="revokeApiKey('${key.id}')">
+                                    Revogar
+                                </button>
+                                <button class="btn" onclick="viewUsage('${key.id}')" style="margin-left: 10px;">
+                                    Ver Uso
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #718096;">Nenhuma chave de API encontrada.</p>';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar chaves:', error);
+                document.getElementById('api-keys-list').innerHTML = 
+                    '<p style="text-align: center; color: #e53e3e;">Erro ao carregar chaves de API.</p>';
+            } finally {
+                showLoading('keys-loading', false);
+            }
+        }
+        
+        // Revogar chave de API
+        async function revokeApiKey(keyId) {
+            if (!confirm('Tem certeza que deseja revogar esta chave de API?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/api-keys/${keyId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ Chave revogada com sucesso!');
+                    loadApiKeys(); // Recarregar lista
+                } else {
+                    alert(`❌ Erro: ${data.message}`);
+                }
+                
+            } catch (error) {
+                alert(`❌ Erro de conexão: ${error.message}`);
+            }
+        }
+        
+        // Ver estatísticas de uso
+        async function viewUsage(keyId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/usage/${keyId}`);
+                const data = await response.json();
+                
+                let usageText = `📊 Estatísticas de Uso\n\n`;
+                usageText += `Total de Requisições: ${data.total_requests}\n\n`;
+                
+                if (data.usage && Object.keys(data.usage).length > 0) {
+                    usageText += `Uso por Data:\n`;
+                    Object.entries(data.usage).forEach(([date, stats]) => {
+                        usageText += `${date}: ${stats.total} requisições\n`;
+                    });
+                } else {
+                    usageText += `Nenhum uso registrado ainda.`;
+                }
+                
+                alert(usageText);
+                
+            } catch (error) {
+                alert(`❌ Erro ao carregar estatísticas: ${error.message}`);
+            }
+        }
+        
+        // Atualizar URL do MCP
+        function updateMcpUrl() {
+            // Aqui você pode configurar a URL do seu servidor MCP no Railway
+            const mcpUrl = 'https://seu-servidor-mcp.railway.app/mcp';
+            document.getElementById('mcp-url').textContent = mcpUrl;
+        }
+        
+        // Copiar para clipboard
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copiado para a área de transferência!');
+            }).catch(() => {
+                alert('❌ Erro ao copiar. Copie manualmente.');
+            });
+        }
+        
+        // Carregar dashboard ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>
+
